@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ACPACS — Car Park Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1d27;
+      border-bottom: 2px solid #008751; /* Nigerian green */
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+
+    header h1 span { color: #008751; }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      background: #00c853;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7c84a0;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-card.green .value { color: #00c853; }
+    .stat-card.gold .value  { color: #ffd600; }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #7c84a0;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #2d3148;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1a1d27;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    th {
+      background: #12151f;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7c84a0;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-top: 1px solid #2d3148;
+      font-size: 0.9rem;
+    }
+
+    tr:hover td { background: #1e2133; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.active { background: #00c85322; color: #00c853; border: 1px solid #00c85355; }
+    .badge.done   { background: #7c84a022; color: #7c84a0; border: 1px solid #7c84a055; }
+
+    .plate {
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: #12151f;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #2d3148;
+      color: #ffd600;
+    }
+
+    .amount { color: #00c853; font-weight: 600; }
+
+    .empty {
+      text-align: center;
+      padding: 2rem;
+      color: #7c84a0;
+      font-size: 0.9rem;
+    }
+
+    .refresh-btn {
+      background: #008751;
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .refresh-btn:hover { background: #00a060; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span>ACPACS</span> — Car Park Management</h1>
+  <div>
+    <span class="status-dot"></span>
+    <span style="font-size:0.85rem; color:#7c84a0">System Live</span>
+    &nbsp;&nbsp;
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-card green">
+      <div class="label">Currently Parked</div>
+      <div class="value" id="stat-active">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Occupancy</div>
+      <div class="value" id="stat-occupancy">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Completed Sessions</div>
+      <div class="value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="label">Total Revenue (₦)</div>
+      <div class="value" id="stat-revenue">—</div>
+    </div>
+  </div>
+
+  <!-- Active sessions -->
+  <div class="section-title">Currently Parked Vehicles</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Plate</th>
+        <th>Entry Time</th>
+        <th>Duration</th>
+        <th>Est. Bill</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="active-tbody">
+      <tr><td colspan="5" class="empty">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Transactions -->
+  <div class="section-title">Completed Transactions</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Plate</th>
+        <th>Entry</th>
+        <th>Exit</th>
+        <th>Duration</th>
+        <th>Hours Billed</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody id="txn-tbody">
+      <tr><td colspan="6" class="empty">Loading...</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<script>
+  async function loadSessions() {
+    const tbody = document.getElementById('active-tbody');
+    try {
+      const res = await fetch('/sessions');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      document.getElementById('stat-active').textContent = data.length;
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">No vehicles currently parked</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(s => `
+        <tr>
+          <td><span class="plate">${s.plate}</span></td>
+          <td>${s.entry_time.replace('T', ' ')}</td>
+          <td>${s.duration_so_far}</td>
+          <td class="amount">${s.estimated_bill}</td>
+          <td><span class="badge active">Active</span></td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      console.error('loadSessions failed:', e);
+      tbody.innerHTML =
+        '<tr><td colspan="5" class="empty">Could not load sessions \u2014 ' + e.message + '</td></tr>';
+      document.getElementById('stat-active').textContent = '!';
+    }
+  }
+
+  async function loadOccupancy() {
+    try {
+      const res = await fetch('/occupancy');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const d = await res.json();
+      document.getElementById('stat-occupancy').textContent =
+        d.occupancy + ' / ' + d.capacity;
+    } catch (e) {
+      console.error('loadOccupancy failed:', e);
+      document.getElementById('stat-occupancy').textContent = '!';
+    }
+  }
+
+  async function loadPayments() {
+    const tbody = document.getElementById('txn-tbody');
+    try {
+      // Endpoint is /payments, and the fee column is fee_amount.
+      // Both were renamed to match Table 3.4 of the report.
+      const res = await fetch('/payments');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      document.getElementById('stat-total').textContent = data.length;
+
+      const totalRevenue = data.reduce((sum, t) => sum + t.fee_amount, 0);
+      document.getElementById('stat-revenue').textContent =
+        '₦' + totalRevenue.toLocaleString('en-NG', {maximumFractionDigits: 0});
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">No completed transactions yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(t => `
+        <tr>
+          <td><span class="plate">${t.plate}</span></td>
+          <td>${t.entry_time.replace('T', ' ')}</td>
+          <td>${t.exit_time.replace('T', ' ')}</td>
+          <td>${formatDuration(t.duration_minutes)}</td>
+          <td>${t.billable_hours}hr</td>
+          <td class="amount">₦${t.fee_amount.toLocaleString()}</td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      // Without this the whole function died silently on a failed fetch,
+      // leaving the revenue figure and the table stuck on their placeholders.
+      console.error('loadPayments failed:', e);
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="empty">Could not load payments \u2014 ' + e.message + '</td></tr>';
+      document.getElementById('stat-revenue').textContent = '!';
+    }
+  }
+
+  function formatDuration(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return m + 'min';
+    if (m === 0) return h + 'hr';
+    return h + 'hr ' + m + 'min';
+  }
+
+  function loadAll() {
+    loadSessions();
+    loadOccupancy();
+    loadPayments();
+  }
+
+  // Load on page open, then refresh every 5 seconds. 30 seconds was long
+  // enough that a completed exit appeared not to register during a demo.
+  loadAll();
+  setInterval(loadAll, 5000);
+</script>
+</body>
+</html>

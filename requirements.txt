@@ -1,0 +1,18 @@
+# Backend
+fastapi==0.138.1
+uvicorn==0.49.0
+pydantic==2.13.4
+
+# ALPR (plate detection + OCR)
+ultralytics==8.4.81
+paddleocr==3.7.0
+paddlepaddle==3.3.1
+opencv-python==4.13.0.92
+numpy==2.3.5
+
+# Serial bridge
+pyserial==3.5
+requests==2.34.2
+
+# Evaluation figures (make_figure.py)
+matplotlib==3.11.0

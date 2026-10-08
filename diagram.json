@@ -1,0 +1,121 @@
+{
+    "version": 1,
+    "author": "ACPACS Gate Controller",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "wokwi-arduino-uno",
+        "id": "uno",
+        "top": 0,
+        "left": 0,
+        "attrs": {}
+      },
+      {
+        "type": "wokwi-lcd1602",
+        "id": "lcd1",
+        "top": -190,
+        "left": -10,
+        "attrs": { "pins": "i2c", "background": "green" }
+      },
+      {
+        "type": "wokwi-servo",
+        "id": "servo1",
+        "top": 10,
+        "left": 350,
+        "attrs": { "horn": "single" }
+      },
+      {
+        "type": "wokwi-led",
+        "id": "ledGreen",
+        "top": -110,
+        "left": 360,
+        "attrs": { "color": "green", "label": "GRANTED" }
+      },
+      {
+        "type": "wokwi-resistor",
+        "id": "rGreen",
+        "top": -40,
+        "left": 350,
+        "rotate": 90,
+        "attrs": { "value": "220" }
+      },
+      {
+        "type": "wokwi-led",
+        "id": "ledRed",
+        "top": -110,
+        "left": 450,
+        "attrs": { "color": "red", "label": "DENIED" }
+      },
+      {
+        "type": "wokwi-resistor",
+        "id": "rRed",
+        "top": -40,
+        "left": 440,
+        "rotate": 90,
+        "attrs": { "value": "220" }
+      },
+      {
+        "type": "wokwi-buzzer",
+        "id": "bz1",
+        "top": 150,
+        "left": 350,
+        "attrs": { "volume": "0.1" }
+      },
+      {
+        "type": "wokwi-pushbutton",
+        "id": "btnEntry",
+        "top": 250,
+        "left": -10,
+        "attrs": { "color": "green", "label": "ENTRY IR" }
+      },
+      {
+        "type": "wokwi-pushbutton",
+        "id": "btnExit",
+        "top": 250,
+        "left": 110,
+        "attrs": { "color": "red", "label": "EXIT IR" }
+      },
+      {
+        "type": "wokwi-pushbutton",
+        "id": "btnFinger",
+        "top": 250,
+        "left": 230,
+        "attrs": { "color": "blue", "label": "FINGER" }
+      }
+    ],
+    "connections": [
+      [ "uno:5V",    "lcd1:VCC",       "red",    [ "v-30" ] ],
+      [ "uno:GND.1", "lcd1:GND",       "black",  [ "v-30" ] ],
+      [ "uno:A4",    "lcd1:SDA",       "green",  [ "v-40" ] ],
+      [ "uno:A5",    "lcd1:SCL",       "green",  [ "v-45" ] ],
+  
+      [ "uno:5V",    "servo1:V+",      "red",    [ "v20", "h60" ] ],
+      [ "uno:GND.2", "servo1:GND",     "black",  [ "v25", "h60" ] ],
+      [ "uno:9",     "servo1:PWM",     "orange", [ "v-15", "h80" ] ],
+  
+      [ "uno:5",     "ledGreen:A",     "green",  [ "v-20", "h100" ] ],
+      [ "ledGreen:C","rGreen:1",       "green",  [ "v10" ] ],
+      [ "rGreen:2",  "uno:GND.3",      "black",  [ "v20", "h-60" ] ],
+  
+      [ "uno:6",     "ledRed:A",       "red",    [ "v-25", "h140" ] ],
+      [ "ledRed:C",  "rRed:1",         "red",    [ "v10" ] ],
+      [ "rRed:2",    "uno:GND.3",      "black",  [ "v25", "h-140" ] ],
+  
+      [ "uno:7",     "bz1:2",          "purple", [ "v30", "h70" ] ],
+      [ "bz1:1",     "uno:GND.3",      "black",  [ "v-20", "h-60" ] ],
+  
+      [ "uno:4",     "btnEntry:1.l",   "blue",   [ "v60", "h-40" ] ],
+      [ "btnEntry:2.l", "uno:GND.3",   "black",  [ "v20", "h-20" ] ],
+  
+      [ "uno:8",     "btnExit:1.l",    "blue",   [ "v70", "h-20" ] ],
+      [ "btnExit:2.l",  "uno:GND.3",   "black",  [ "v25", "h-20" ] ],
+  
+      [ "uno:12",    "btnFinger:1.l",  "cyan",   [ "v80", "h20" ] ],
+      [ "btnFinger:2.l", "uno:GND.3",  "black",  [ "v30", "h-20" ] ]
+    ],
+    "serialMonitor": {
+      "display": "always",
+      "convertEol": true
+    },
+    "dependencies": {}
+  }
