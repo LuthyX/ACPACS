@@ -12,13 +12,14 @@ v3.0 changes:
      to the OPEN command and appends to latency_log.csv, so S4.2's 2.5s
      target can be reported as a measurement instead of a promise.
 
-Usage:
+Usage (from the project root):
   Real hardware:
-      python serial_bridge.py --port /dev/tty.usbmodem1234 --camera 0
+      python -m acpacs.serial_bridge --port /dev/tty.usbmodem1234 --camera 0
 
   Wokwi simulation (no camera, so supply test images):
-      python serial_bridge.py --wokwi \
-          --test-entry entry_image.jpg --test-exit exit_image.jpg
+      python -m acpacs.serial_bridge --wokwi \
+          --test-entry data/samples/entry_image.webp \
+          --test-exit data/samples/exit_image.webp
 
   In Wokwi, a SHORT press of the blue button is driver #1.
   HOLDING it for 1.5s+ produces a DIFFERENT template — use that to
@@ -34,7 +35,8 @@ import cv2
 import glob
 import os
 from datetime import datetime
-from alpr_connector import read_plate_from_image
+from acpacs.alpr_connector import read_plate_from_image
+from acpacs.paths import LATENCY_LOG, RUNTIME_DIR
 
 API_BASE_URL = "http://localhost:8000"
 
@@ -49,8 +51,8 @@ WOKWI_PORT = "rfc2217://localhost:4000"
 FP_TIMEOUT = 20
 
 # Report S4.2 sets a 2.5s target from vehicle detection to gate actuation.
-# Every cycle is appended here so Chapter 4 can report a distribution.
-LATENCY_LOG = "latency_log.csv"
+# Every cycle is appended to LATENCY_LOG (results/latency_log.csv, see
+# paths.py) so Chapter 4 can report a distribution.
 
 
 # -------------------------------------------------------------------
@@ -218,7 +220,7 @@ def error_detail(resp):
 # -------------------------------------------------------------------
 # Camera Capture
 # -------------------------------------------------------------------
-def capture_image(camera_index=0, save_path="gate_capture.jpg"):
+def capture_image(camera_index=0, save_path=RUNTIME_DIR / "gate_capture.jpg"):
     """
     Capture a single frame from the camera.
     Falls back to a test image if camera not available.
@@ -232,6 +234,7 @@ def capture_image(camera_index=0, save_path="gate_capture.jpg"):
     cap.release()
 
     if ret:
+        save_path = str(save_path)
         cv2.imwrite(save_path, frame)
         print(f"  [cam] Image captured: {save_path}")
         return save_path
@@ -541,7 +544,7 @@ def run(port, camera_index=0, test_entry=None, test_exit=None):
                     if test_entry:
                         image_path = test_entry
                     else:
-                        image_path = capture_image(camera_index, "entry_capture.jpg")
+                        image_path = capture_image(camera_index, RUNTIME_DIR / "entry_capture.jpg")
 
                     if image_path:
                         handle_entry(ser, image_path, t_detected)
@@ -555,7 +558,7 @@ def run(port, camera_index=0, test_entry=None, test_exit=None):
                     if test_exit:
                         image_path = test_exit
                     else:
-                        image_path = capture_image(camera_index, "exit_capture.jpg")
+                        image_path = capture_image(camera_index, RUNTIME_DIR / "exit_capture.jpg")
 
                     if image_path:
                         handle_exit(ser, image_path, t_detected)

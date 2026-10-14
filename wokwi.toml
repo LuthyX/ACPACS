@@ -1,7 +1,7 @@
 [wokwi]
 version = 1
 
-firmware = 'build/gate_controller.ino.hex'
-elf      = 'build/gate_controller.ino.elf'
+firmware = 'firmware/build/gate_controller.ino.hex'
+elf      = 'firmware/build/gate_controller.ino.elf'
 
 rfc2217ServerPort = 4000

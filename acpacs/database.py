@@ -25,7 +25,7 @@ Tables (S3.4: "The only two database tables present"):
 
 import sqlite3
 
-DB_PATH = "acpacs.db"
+from acpacs.paths import DB_PATH
 
 
 def get_connection():
@@ -81,7 +81,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("Database initialized: acpacs.db")
+    print(f"Database initialized: {DB_PATH}")
 
 
 if __name__ == "__main__":

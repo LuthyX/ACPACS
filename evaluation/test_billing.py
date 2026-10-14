@@ -6,12 +6,12 @@ S4.2 sets a target of 100% billing accuracy. This exercises the ceiling
 formula against hand-computed expected values, concentrating on the hour
 boundaries where a ceiling function is most likely to be wrong.
 
-    python3 test_billing.py
+    python -m evaluation.test_billing
 
 Prints a results table suitable for Chapter 4.
 """
 
-from billing import calculate_bill, format_duration, RATE_PER_HOUR_NAIRA
+from acpacs.billing import calculate_bill, format_duration, RATE_PER_HOUR_NAIRA
 
 BASE = "2026-08-30T08:00:00"
 

@@ -1,5 +1,5 @@
 """
-make_figure_4_2.py
+make_figure.py
 ACPACS — generates Figure 4.2 (license plate preprocessing pipeline)
 
 Reproduces the five stages of the recognition pipeline on a single image and
@@ -8,14 +8,14 @@ assembles them into one labelled figure ready to insert into Chapter Four.
 It imports the real preprocessing functions from alpr_connector, so the
 panels show exactly what the pipeline does rather than a reimplementation.
 
-    pip install matplotlib
-    python3 make_figure_4_2.py --image entry_image.jpg
+    python -m evaluation.make_figure --image data/samples/entry_image.webp
 
-Output: Figure_4_2_preprocessing.png (300 dpi) plus the individual stage
-files, in case you would rather lay them out yourself.
+Output: results/figures/Figure_4_2_preprocessing.png (300 dpi), plus the
+individual stage files with --keep-stages, in case you would rather lay
+them out yourself.
 
-Run it from the folder containing alpr_connector.py. Loading YOLO and
-PaddleOCR takes a little time on first import.
+Run it from the project root. Loading YOLO and PaddleOCR takes a little
+time on first import.
 """
 
 import argparse
@@ -29,7 +29,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 # The pipeline's own functions, so the figure cannot drift from the code.
-from alpr_connector import (
+from acpacs.paths import FIGURES_DIR, SAMPLES_DIR
+from acpacs.alpr_connector import (
     detector,
     perspective_correction,
     apply_clahe,
@@ -121,9 +122,9 @@ def compose(stages, out_path):
 
 def main():
     ap = argparse.ArgumentParser(description="Generate Figure 4.2")
-    ap.add_argument("--image", default="entry_image.jpg",
-                    help="source photograph (default: entry_image.jpg)")
-    ap.add_argument("--out", default="Figure_4_2_preprocessing.png")
+    ap.add_argument("--image", default=str(SAMPLES_DIR / "entry_image.webp"),
+                    help="source photograph (default: data/samples/entry_image.webp)")
+    ap.add_argument("--out", default=str(FIGURES_DIR / "Figure_4_2_preprocessing.png"))
     ap.add_argument("--keep-stages", action="store_true",
                     help="also write each stage as its own file")
     args = ap.parse_args()
@@ -136,7 +137,7 @@ def main():
 
     if args.keep_stages:
         for name, img in stages.items():
-            fn = f"stage_{name}.jpg"
+            fn = str(FIGURES_DIR / f"stage_{name}.jpg")
             cv2.imwrite(fn, img)
             print(f"  wrote {fn}")
 

@@ -30,9 +30,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from database import get_connection, init_db
-from billing import calculate_bill, format_duration
-from biometrics import verify
+from acpacs.database import get_connection, init_db
+from acpacs.billing import calculate_bill, format_duration
+from acpacs.biometrics import verify
+from acpacs.paths import TEMPLATES_DIR
 
 app = FastAPI(
     title="ACPACS API",
@@ -323,5 +324,5 @@ def get_session_by_plate(plate: str):
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard():
     """Serves the HTML dashboard."""
-    with open("templates/dashboard.html") as f:
+    with open(TEMPLATES_DIR / "dashboard.html") as f:
         return f.read()

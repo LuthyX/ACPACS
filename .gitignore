@@ -8,15 +8,5 @@ venv/
 # macOS
 .DS_Store
 
-# Runtime database — recreated by database.init_db()
-acpacs.db
-
-# Images written by the ALPR pipeline on every run
-debug_plate_crop.jpg
-fig_a_original.jpg
-fig_b_detected.jpg
-fig_c_cropped.jpg
-fig_d_warped.jpg
-gate_capture.jpg
-entry_capture.jpg
-exit_capture.jpg
+# Runtime state and per-run debug images (see acpacs/paths.py)
+runtime/

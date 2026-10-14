@@ -9,9 +9,9 @@ It:
   4. Runs PaddleOCR to read the plate text
   5. Calls the backend API (/entry or /exit) with the result
 
-Usage:
-  python alpr_connector.py --mode entry --image path/to/image.jpg
-  python alpr_connector.py --mode exit  --image path/to/image.jpg --template HEX
+Usage (from the project root):
+  python -m acpacs.alpr_connector --mode entry --image path/to/image.jpg
+  python -m acpacs.alpr_connector --mode exit  --image path/to/image.jpg --template HEX
 """
 
 import cv2
@@ -23,16 +23,17 @@ import re
 from ultralytics import YOLO
 from paddleocr import PaddleOCR
 
+from acpacs.paths import MODEL_PATH, RUNTIME_DIR
+
 # --- Configuration ---
 API_BASE_URL = "http://localhost:8000"
-MODEL_PATH = "nigerian_plate_best.pt"
 CONFIDENCE_THRESHOLD = 0.25
 PLATE_PATTERN = re.compile(r'^[A-Z]{3}[0-9]{3}[A-Z]{2}$')
 MIN_OCR_CONFIDENCE = 0.50
 
 # --- Load models once at startup ---
 print("Loading YOLO model...")
-detector = YOLO(MODEL_PATH)
+detector = YOLO(str(MODEL_PATH))
 
 print("Loading OCR engine...")
 ocr_engine = PaddleOCR(
@@ -149,7 +150,7 @@ def read_plate_from_image(image_path):
     if img is None:
         print(f"❌ Could not read image: {image_path}")
         return None, 0
-    cv2.imwrite("fig_a_original.jpg", img)
+    cv2.imwrite(str(RUNTIME_DIR / "fig_a_original.jpg"), img)
 
     # Step 1 — Detect plate with YOLO
     results = detector.predict(image_path, conf=CONFIDENCE_THRESHOLD, verbose =False)
@@ -164,7 +165,7 @@ def read_plate_from_image(image_path):
     x1, y1, x2, y2 = boxes[best_idx].astype(int)
     _ann = img.copy()
     cv2.rectangle(_ann, (x1, y1), (x2, y2), (0, 255, 0), 4)
-    cv2.imwrite("fig_b_detected.jpg", _ann)
+    cv2.imwrite(str(RUNTIME_DIR / "fig_b_detected.jpg"), _ann)
 
     print(f"✅ Plate detected (conf: {confidences[best_idx]:.2%}) at [{x1},{y1},{x2},{y2}]")
 
@@ -181,11 +182,11 @@ def read_plate_from_image(image_path):
     # Nigerian plates have state name in top ~30% — skip it for OCR
     h_crop = plate_crop.shape[0]
     plate_crop = plate_crop[int(h_crop * 0.30):, :]
-    cv2.imwrite("fig_c_cropped.jpg", plate_crop)
+    cv2.imwrite(str(RUNTIME_DIR / "fig_c_cropped.jpg"), plate_crop)
 
     # Step 3 — Perspective correction
     plate_crop = perspective_correction(plate_crop)
-    cv2.imwrite("fig_d_warped.jpg", plate_crop)
+    cv2.imwrite(str(RUNTIME_DIR / "fig_d_warped.jpg"), plate_crop)
 
     # Step 4 — CLAHE contrast enhancement
     plate_crop = apply_clahe(plate_crop)
@@ -198,7 +199,7 @@ def read_plate_from_image(image_path):
                             interpolation=cv2.INTER_CUBIC)
 
     # Save preprocessed crop for debugging
-    debug_path = "debug_plate_crop.jpg"
+    debug_path = str(RUNTIME_DIR / "debug_plate_crop.jpg")
     cv2.imwrite(debug_path, plate_crop)
     print(f"   Preprocessed crop saved to: {debug_path}")
 

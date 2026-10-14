@@ -8,8 +8,8 @@ it correctly. This closes that gap.
 
 SETUP
 -----
-1. Put your test images in a folder, e.g. ./ocr_test/
-2. Create ground_truth.csv next to this script:
+1. Put your test images in a folder (default: data/ocr_test/)
+2. Create ground_truth.csv in that folder:
 
        filename,plate
        car01.jpg,KSF487HN
@@ -20,7 +20,8 @@ SETUP
    must be one the YOLO model never trained on, or the number is
    meaningless.
 
-3. python3 test_ocr.py --images ./ocr_test --truth ground_truth.csv
+3. python -m evaluation.test_ocr      # defaults to data/ocr_test/
+   python -m evaluation.test_ocr --images DIR --truth DIR/ground_truth.csv
 
 WHAT IT REPORTS
 ---------------
@@ -39,6 +40,8 @@ import argparse
 import csv
 import os
 import sys
+
+from acpacs.paths import OCR_TEST_DIR
 
 
 def edit_distance(a, b):
@@ -72,8 +75,9 @@ def char_accuracy(truth, predicted):
 
 def main():
     ap = argparse.ArgumentParser(description="ACPACS OCR accuracy measurement")
-    ap.add_argument("--images", default="./ocr_test", help="folder of test images")
-    ap.add_argument("--truth", default="ground_truth.csv", help="filename,plate CSV")
+    ap.add_argument("--images", default=str(OCR_TEST_DIR), help="folder of test images")
+    ap.add_argument("--truth", default=str(OCR_TEST_DIR / "ground_truth.csv"),
+                    help="filename,plate CSV")
     args = ap.parse_args()
 
     if not os.path.exists(args.truth):
@@ -89,7 +93,7 @@ def main():
 
     # Imported here so the ground-truth checks above fail fast, before
     # spending 30 seconds loading YOLO and PaddleOCR.
-    from alpr_connector import read_plate_from_image
+    from acpacs.alpr_connector import read_plate_from_image
 
     print(f"\nACPACS OCR Accuracy — {len(cases)} test images")
     print("Target (S4.2): >= 90% character accuracy\n")

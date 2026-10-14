@@ -5,7 +5,7 @@ ACPACS — Latency Analysis (report metric S4.2)
 S4.2 sets a target of 2.5 seconds. serial_bridge.py logs each gate cycle
 decomposed into its segments; this summarises them.
 
-    python3 latency_report.py
+    python -m evaluation.latency_report
 
 Report BOTH the end-to-end cycle and the system processing latency. The
 end-to-end figure includes the driver presenting a finger, which is not a
@@ -19,7 +19,7 @@ import os
 import statistics
 import sys
 
-LOG = "latency_log.csv"
+from acpacs.paths import LATENCY_LOG as LOG
 TARGET = 2.5
 
 
